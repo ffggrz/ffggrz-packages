@@ -1,8 +1,9 @@
+local site_i18n = i18n 'gluon-site'
+
 local uci = require("simple-uci").cursor()
-local lutil = require "gluon.web.util"
 local fs = require "nixio.fs"
 
-local site = require 'gluon.site_config'
+local site = require 'gluon.site'
 local sysconfig = require 'gluon.sysconfig'
 local util = require "gluon.util"
 
@@ -25,13 +26,13 @@ local msg
 if has_fastd or has_tunneldigger then
 	if not fastd_enabled then
 		if not tunneldigger_enabled then
-			msg = _translate('gluon-config-mode:novpn')
+			msg = site_i18n._translate('gluon-config-mode:novpn')
 		end
 	end
 end
 if has_fastd and fastd_enabled then
-	pubkey = util.trim(lutil.exec("/etc/init.d/fastd show_key mesh_vpn"))
-	msg = _translate('gluon-config-mode:pubkey')
+	pubkey = util.trim(util.exec("/etc/init.d/fastd show_key mesh_vpn"))
+	msg = site_i18n._translate('gluon-config-mode:pubkey')
 end
 
 if not msg then return end

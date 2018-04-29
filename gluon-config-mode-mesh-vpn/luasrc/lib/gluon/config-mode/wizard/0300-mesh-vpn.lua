@@ -11,7 +11,9 @@ return function(form, uci)
 local fastd_enabled = uci:get_bool('fastd', 'mesh_vpn', 'enabled')
 local tunneldigger_enabled = uci:get_bool('tunneldigger', 'mesh_vpn', 'enabled')
 
-	local msg = translate(
+	local pkg_i18n = i18n 'gluon-config-mode-mesh-vpn'
+
+	local msg = pkg_i18n.translate(
 		'Your internet connection can be used to establish a ' ..
 	        'VPN connection with other nodes. ' ..
 	        'Enable this option if there are no other nodes reachable ' ..
@@ -24,7 +26,7 @@ local tunneldigger_enabled = uci:get_bool('tunneldigger', 'mesh_vpn', 'enabled')
 
 	local o
 
-	local meshvpn = s:option(Flag, "meshvpn", translate("Use internet connection (mesh VPN)"))
+	local meshvpn = s:option(Flag, "meshvpn", pkg_i18n.translate("Use internet connection (mesh VPN)"))
 	meshvpn.default = fastd_enabled or tunneldigger_enabled
 	function meshvpn:write(data)
 		if has_fastd then
@@ -43,7 +45,7 @@ local tunneldigger_enabled = uci:get_bool('tunneldigger', 'mesh_vpn', 'enabled')
 		end
 	end
 
-	local limit = s:option(Flag, "limit_enabled", translate("Limit bandwidth"))
+	local limit = s:option(Flag, "limit_enabled", pkg_i18n.translate("Limit bandwidth"))
 	limit:depends(meshvpn, true)
 	limit.default = uci:get_bool("simple-tc", "mesh_vpn", "enabled")
 	function limit:write(data)
@@ -52,7 +54,7 @@ local tunneldigger_enabled = uci:get_bool('tunneldigger', 'mesh_vpn', 'enabled')
 		uci:set("simple-tc", "mesh_vpn", "ifname", "mesh-vpn")
 	end
 
-	o = s:option(Value, "limit_ingress", translate("Downstream (kbit/s)"))
+	o = s:option(Value, "limit_ingress", pkg_i18n.translate("Downstream (kbit/s)"))
 	o:depends(limit, true)
 	o.default = uci:get("simple-tc", "mesh_vpn", "limit_ingress")
 	o.datatype = "uinteger"
@@ -60,7 +62,7 @@ local tunneldigger_enabled = uci:get_bool('tunneldigger', 'mesh_vpn', 'enabled')
 		uci:set("simple-tc", "mesh_vpn", "limit_ingress", data)
 	end
 
-	o = s:option(Value, "limit_egress", translate("Upstream (kbit/s)"))
+	o = s:option(Value, "limit_egress", pkg_i18n.translate("Upstream (kbit/s)"))
 	o:depends(limit, true)
 	o.default = uci:get("simple-tc", "mesh_vpn", "limit_egress")
 	o.datatype = "uinteger"

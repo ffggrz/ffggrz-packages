@@ -1,6 +1,6 @@
 #!/usr/bin/lua
 
-local site = require 'gluon.site_config'
+local site = require 'gluon.site'
 local users = require 'gluon.users'
 local util = require 'gluon.util'
 local fs = require 'nixio.fs'
@@ -14,7 +14,7 @@ uci:section('network', 'interface', 'mesh_vpn', {
 	transitive = true,
 	fixed_mtu = true,
 	macaddr = util.generate_mac(7),
-	mtu = site.mesh_vpn.mtu,
+	mtu = site.mesh_vpn.mtu(),
 })
 
 uci:save('network')
@@ -25,22 +25,12 @@ if fs.access('/etc/config/gluon-simple-tc') then
 end
 
 if not uci:get('simple-tc', 'mesh_vpn') then
-	local config = {
+	uci:section('simple-tc', 'interface', 'mesh_vpn', {
 		ifname = 'mesh-vpn',
-		enabled = false,
-	}
-
-
-	if site.mesh_vpn.bandwidth_limit then
-		if site.mesh_vpn.bandwidth_limit.enabled then
-			config.enabled = true
-		end
-
-		config.limit_ingress = site.mesh_vpn.bandwidth_limit.ingress
-		config.limit_egress = site.mesh_vpn.bandwidth_limit.egress
-	end
-
-	uci:section('simple-tc', 'interface', 'mesh_vpn', config)
+		enabled = site.mesh_vpn.bandwidth_limit.enabled(false),
+		limit_ingress = site.mesh_vpn.bandwidth_limit.ingress(),
+		limit_egress = site.mesh_vpn.bandwidth_limit.egress(),
+	})
 	uci:save('simple-tc')
 end
 
@@ -48,8 +38,6 @@ end
 -- The previously used user and group are removed, we now have a generic group
 users.remove_user('gluon-fastd')
 users.remove_group('gluon-fastd')
-
-users.add_group('gluon-mesh-vpn', 800)
 
 uci:section('firewall', 'include', 'mesh_vpn_dns', {
 	type = 'restore',
@@ -74,7 +62,7 @@ if has_fastd then
 		-- if tunneldigger_enabled is also not set (first install generally)
 		if tunneldigger_enabled == nil then
 			-- set fastd.mesh_vpn.enabled from site config
-			uci:set('fastd', 'mesh_vpn', 'enabled', site.mesh_vpn.enabled or false)
+			uci:set('fastd', 'mesh_vpn', 'enabled', site.mesh_vpn.enabled(false))
 		-- if tunneldigger is installed and configured
 		elseif has_tunneldigger then
 			-- disable fastd
@@ -107,7 +95,7 @@ if has_tunneldigger then
 			-- if fastd_enabled ist also not set (first install generally)
 			if fastd_enabled == nil then
 				-- set tunneldigger.mesh_vpn.enabled from site config
-				uci:set('tunneldigger', 'mesh_vpn', 'enabled', site.mesh_vpn.enabled or false)
+				uci:set('tunneldigger', 'mesh_vpn', 'enabled', site.mesh_vpn.enabled(false))
 			-- fast is not installed but was installed previously
 			else
 				-- fastd_enabled (old) -> tunneldigger_enabled

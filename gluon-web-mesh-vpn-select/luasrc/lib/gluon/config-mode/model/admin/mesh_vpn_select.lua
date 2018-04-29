@@ -1,12 +1,13 @@
 local uci = require("simple-uci").cursor()
-local util = gluon.web.util
+local util = gluon.util
 
 local f = Form(translate('Mesh VPN'))
 
 local s = f:section(Section)
 
 local mode = s:option(Value, 'mode')
-mode.template = "gluon/model/mesh-vpn-select"
+mode.package = "gluon-web-mesh-vpn-select"
+mode.template = "mesh-vpn-select"
 
 if uci:get_bool('tunneldigger', 'mesh_vpn', 'enabled') then
 	mode.default = 'performance'
